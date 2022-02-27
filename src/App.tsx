@@ -1,26 +1,19 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import { ChakraProvider } from "@chakra-ui/react";
+import { Toaster } from "react-hot-toast";
 
-function App() {
+import { ResponseInterceptor } from "./components/ResponseInterceptor";
+import { AuthProvider } from "./hooks/useAuth";
+import { AppRoutes } from "./routes";
+import { theme } from "./theme";
+
+export function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AuthProvider>
+      <ChakraProvider theme={theme}>
+        <AppRoutes />
+        <Toaster />
+        <ResponseInterceptor />
+      </ChakraProvider>
+    </AuthProvider>
   );
 }
-
-export default App;
