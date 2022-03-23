@@ -1,4 +1,4 @@
-import { Flex } from "@chakra-ui/react";
+import { Center, Flex, Heading } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { ProductCard } from "../../components/ProductCard";
 import { api } from "../../services/api";
@@ -19,12 +19,15 @@ export function Home() {
   };
 
   return (
-    <Flex justifyContent="center">
-      <Flex wrap="wrap">
+    <Center flexDirection="column" p={5}>
+      <Heading mt={20} mb={10} textAlign="center" variant="h3">
+        Conheça nossos produtos
+      </Heading>
+      <Flex justifyContent="center" wrap="wrap">
         {products.map((product) => (
-          <ProductCard product={product} />
+          <ProductCard key={product.id} product={product} />
         ))}
       </Flex>
-    </Flex>
+    </Center>
   );
 }

@@ -6,19 +6,26 @@ import {
   Icon,
   chakra,
   Tooltip,
+  Text,
+  Heading,
+  IconButton,
 } from "@chakra-ui/react";
-import { FiShoppingCart } from "react-icons/fi";
+import { FiPlusCircle, FiCamera } from "react-icons/fi";
+import { useCart } from "../../hooks/useCart";
 import { Product } from "../../types";
+import { formatNumberToBRL } from "../../utils";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const { addProduct } = useCart();
+  const imageContainerBackground = useColorModeValue("transparent", "black");
+
   return (
     <Box
       bg={useColorModeValue("white", "gray.800")}
-      h="sm"
       borderWidth="1px"
       rounded="lg"
       shadow="lg"
@@ -27,58 +34,60 @@ export function ProductCard({ product }: ProductCardProps) {
       m={5}
       sx={{
         "@media screen and (max-width: 480px)": {
-          w: 300,
+          w: 280,
+          h: 250,
         },
         "@media screen and (min-width: 480px)": {
-          w: "sm",
+          w: 300,
+          h: 280,
         },
       }}
     >
-      <Box
+      <Flex
+        bg={imageContainerBackground}
         overflow={"hidden"}
-        display="flex"
-        justifyContent={"center"}
         h={"70%"}
-        bg={"black"}
+        justify={"center"}
+        align={"center"}
       >
-        <Image
-          objectFit={"contain"}
-          src={product.imageUrl}
-          alt={`Picture of ${product.name}`}
-        />
-      </Box>
+        {product.imageUrl ? (
+          <Image
+            bg="transparent"
+            objectFit={"contain"}
+            src={product.imageUrl}
+            alt={`Picture of ${product.name}`}
+          />
+        ) : (
+          <FiCamera size={40} />
+        )}
+      </Flex>
 
-      <Box p="6">
+      <Box p={3} pr={5}>
         <Flex mt="1" justifyContent="space-between" alignContent="center">
-          <Box
-            fontSize="2xl"
-            fontWeight="semibold"
-            as="h4"
-            lineHeight="tight"
-            isTruncated
-          >
+          <Heading as="h5" size="md">
             {product.name}
-          </Box>
+          </Heading>
           <Tooltip
-            label="Add to cart"
+            label="Adicionar ao carrinho"
             bg="white"
             placement={"top"}
             color={"gray.800"}
             fontSize={"1.2em"}
           >
-            <chakra.a href={"#"} display={"flex"}>
-              <Icon as={FiShoppingCart} h={7} w={7} alignSelf={"center"} />
-            </chakra.a>
+            <IconButton
+              bg="transparent"
+              sx={{
+                _hover: "none",
+              }}
+              onClick={() => addProduct(product)}
+              aria-label="Add product to cart"
+              icon={<Icon as={FiPlusCircle} h={7} w={7} alignSelf={"center"} />}
+            />
           </Tooltip>
         </Flex>
 
-        <Flex justifyContent="space-between" alignContent="center">
-          <Box fontSize="2xl" color={useColorModeValue("gray.800", "white")}>
-            <Box as="span" color={"gray.600"} fontSize="lg">
-              $
-            </Box>
-            {product.price.toFixed(2)}
-          </Box>
+        <Flex alignContent="center">
+          <Text fontSize={"md"}>{formatNumberToBRL(product.price)}</Text>
         </Flex>
       </Box>
     </Box>

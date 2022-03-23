@@ -4,15 +4,19 @@ import {
   FormControl,
   FormLabel,
   Input,
-  // Checkbox,
   Stack,
   Link,
   Button,
   Heading,
   useColorModeValue,
+  FormErrorMessage,
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
+import { yupResolver } from "@hookform/resolvers/yup";
+
 import { useAuth } from "../../hooks/useAuth";
+import { LoginSchema } from "../../validations";
 
 interface LoginFormData {
   email: string;
@@ -20,52 +24,82 @@ interface LoginFormData {
 }
 
 export function Login() {
-  const { login } = useAuth();
+  const { login, loading } = useAuth();
+  const navigate = useNavigate();
 
-  const { register, handleSubmit } = useForm<LoginFormData>();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    resolver: yupResolver(LoginSchema),
+  });
+
   const onSubmit = (data: LoginFormData) => {
     login(data);
   };
 
+  const navigateToRegister = () => {
+    navigate("/register");
+  };
+
+  const recoverPassword = () => {
+    navigate("/recover");
+  };
+
+  const passwordError = errors?.password;
+  const emailError = errors?.email;
   return (
     <Flex
-      minH={"100vh"}
+      mt={10}
+      flexDirection="column"
+      flex={1}
       align={"center"}
       justify={"center"}
-      bg={useColorModeValue("gray.50", "gray.800")}
     >
-      <Stack spacing={8} mx={"auto"} maxW={"lg"} py={12} px={6}>
-        <Stack align={"center"}>
-          <Heading textAlign="center" fontSize={"4xl"}>
-            Entrar como administrador
-          </Heading>
-        </Stack>
-        <Box
-          rounded={"lg"}
-          bg={useColorModeValue("white", "gray.700")}
-          boxShadow={"lg"}
-          p={8}
-        >
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <Stack spacing={4}>
-              <FormControl id="email">
-                <FormLabel>Email</FormLabel>
-                <Input type="email" {...register("email")} />
-              </FormControl>
-              <FormControl id="password">
-                <FormLabel>Senha</FormLabel>
-                <Input type="password" {...register("password")} />
-              </FormControl>
-              <Stack spacing={10}>
-                <Stack
-                  direction={{ base: "column", sm: "row" }}
-                  align={"start"}
-                  justify={"space-between"}
-                >
-                  {/* <Checkbox>Remember me</Checkbox> */}
-                  <Link color={"blue.400"}>Esqueceu sua senha?</Link>
-                </Stack>
+      <Heading textAlign="center" fontSize={"4xl"}>
+        Acessar ecommerce
+      </Heading>
+      <Box
+        rounded={"lg"}
+        bg={useColorModeValue("white", "gray.700")}
+        boxShadow={"lg"}
+        p={8}
+        mt={5}
+      >
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Stack spacing={4}>
+            <FormControl isInvalid={!!emailError}>
+              <FormLabel htmlFor="email">Email</FormLabel>
+              <Input
+                placeholder="email@gmail.com"
+                id="email"
+                type="email"
+                {...register("email")}
+              />
+              {!!emailError && (
+                <FormErrorMessage>{emailError.message}</FormErrorMessage>
+              )}
+            </FormControl>
+            <FormControl isInvalid={!!passwordError}>
+              <FormLabel htmlFor="password">Senha</FormLabel>
+              <Input
+                id="password"
+                placeholder="••••••••••"
+                type="password"
+                {...register("password")}
+              />
+              {!!passwordError && (
+                <FormErrorMessage>{passwordError.message}</FormErrorMessage>
+              )}
+            </FormControl>
+            <Stack spacing={10}>
+              <Link onClick={recoverPassword} color={"blue.400"}>
+                Esqueceu sua senha?
+              </Link>
+              <Stack>
                 <Button
+                  isLoading={loading}
                   bg={"blue.400"}
                   color={"white"}
                   _hover={{
@@ -75,11 +109,18 @@ export function Login() {
                 >
                   Logar
                 </Button>
+                <Button
+                  colorScheme={"blue"}
+                  variant="outline"
+                  onClick={navigateToRegister}
+                >
+                  Fazer cadastro
+                </Button>
               </Stack>
             </Stack>
-          </form>
-        </Box>
-      </Stack>
+          </Stack>
+        </form>
+      </Box>
     </Flex>
   );
 }

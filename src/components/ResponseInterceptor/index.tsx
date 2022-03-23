@@ -11,11 +11,13 @@ export const ResponseInterceptor = () => {
     let interceptor = api.interceptors.response.use(
       undefined,
       async (error) => {
-        let errorMessage = "Erro inesperado.";
+        let errorMessage =
+          "Parece que nossos servidores estão fora do ar tente novamente mais tarde.";
         if (axios.isAxiosError(error)) {
           const status = error?.response?.status;
+          const apiMessage = error?.response?.data?.message;
           const route = error?.response?.config.url;
-          console.log(status, route, !route?.includes("login"));
+
           switch (status) {
             case 401:
               if (!route?.includes("login")) {
@@ -28,10 +30,17 @@ export const ResponseInterceptor = () => {
             case 429:
               errorMessage =
                 "Você realizou muitas requisições, espere um pouco para tentar novamente.";
+              break;
+            default:
+              if (apiMessage) {
+                errorMessage = apiMessage;
+              }
           }
         }
 
+        toast.remove();
         toast.error(errorMessage);
+        return Promise.reject(error);
       }
     );
 

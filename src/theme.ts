@@ -1,8 +1,19 @@
 import { extendTheme, type ThemeConfig } from "@chakra-ui/react";
 
 const config: ThemeConfig = {
-  initialColorMode: "dark",
+  initialColorMode: "light",
   useSystemColorMode: false,
 };
 
-export const theme = extendTheme({ config });
+export const theme = extendTheme({
+  config,
+  components: {
+    Button: {
+      baseStyle: {
+        _focus: {
+          boxShadow: "none",
+        },
+      },
+    },
+  },
+});

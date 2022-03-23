@@ -14,6 +14,7 @@ import { getAccessToken, setAccessToken } from "../utils/localStorage";
 
 export type User = {
   id: string;
+  username: string;
   email: string;
 };
 
@@ -22,20 +23,29 @@ interface LoginCredentials {
   password: string;
 }
 
+interface RegisterCredentials {
+  username: string;
+  email: string;
+  password: string;
+}
+
 type AuthContextDTO = {
-  user: User | null;
+  user?: User;
   setUser: (user: User) => void;
   login: (data: LoginCredentials) => Promise<void>;
+  register: (data: RegisterCredentials) => Promise<void>;
   logout: (message?: string) => void;
+  loading: boolean;
 };
 
 const AuthContext = createContext({} as AuthContextDTO);
 
 export function AuthProvider({ children }: PropsWithChildren<any>) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | undefined>();
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-
   useEffect(() => {
+    refreshToken();
     const intervalId = setInterval(() => {
       refreshToken();
     }, 5000);
@@ -46,41 +56,65 @@ export function AuthProvider({ children }: PropsWithChildren<any>) {
 
   const login = async (inputData: LoginCredentials) => {
     try {
-      const { data } = await api.post("/auth/admin/login", inputData);
+      setLoading(true);
+      const { data } = await api.post("/auth/login", inputData);
       setAccessToken(data.access_token);
       setUser({
         id: data.id,
+        username: data.username,
         email: data.email,
       });
+
       navigate("/", { replace: true });
       toast.success("Logado com sucesso!");
-    } catch {}
+    } catch {
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const register = async (inputData: RegisterCredentials) => {
+    try {
+      setLoading(true);
+      await api.post("/auth/register", inputData);
+      navigate("/login");
+      toast.success("Registrado com sucesso!");
+    } catch {
+    } finally {
+      setLoading(false);
+    }
   };
 
   const logout = () => {
     localStorage.clear();
-    setUser(null);
+    setUser(undefined);
+    if (!window.location.pathname.includes("login")) {
+      navigate("/");
+    }
   };
 
   const refreshToken = async () => {
     try {
       const token = getAccessToken();
       if (!token) {
-        logout();
         return;
       }
       const { data } = await api.post("/auth/refresh");
       setAccessToken(data.access_token);
-    } catch {}
+    } catch {
+      logout();
+    }
   };
 
   return (
     <AuthContext.Provider
       value={{
+        loading,
         user,
         login,
         logout,
         setUser,
+        register,
       }}
     >
       {children}
